@@ -341,6 +341,7 @@
 				INFOPLIST_FILE = CellularAutomataAsync/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 			};
 			name = Debug;
 		};
@@ -407,6 +408,7 @@
 				1F5D1EB01A3936F700864C61 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		1F5D1EB11A3936F700864C61 /* Build configuration list for PBXNativeTarget "CellularAutomataAsyncTests" */ = {
 			isa = XCConfigurationList;
@@ -415,6 +417,7 @@
 				1F5D1EB31A3936F700864C61 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
