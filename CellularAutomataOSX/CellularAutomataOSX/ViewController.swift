@@ -1,14 +1,15 @@
 //
 //  ViewController.swift
-//  CellularAutomataAsync
+//  CellularAutomataOSX
 //
-//  Created by travis on 2014-12-10.
+//  Created by travis on 2014-12-11.
 //  Copyright (c) 2014 C4. All rights reserved.
 //
 
-import UIKit
+import Cocoa
 
-class ViewController: UIViewController {
+class ViewController: NSViewController {
+
     var ruleIndex = 0
     var currentArray = [Bool]()
     var firstRow = [Bool]()
@@ -18,8 +19,10 @@ class ViewController: UIViewController {
     
     var rules = [[String:Pixel]]()
     var currentRules = [String:Pixel]()
-    var imgv = UIImageView()
+    var imgv = NSImageView()
     
+    var baseFilename = ""
+
     func random(below: Int) -> Int {
         return Int(arc4random_uniform(UInt32(below)))
     }
@@ -27,37 +30,35 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         
         generateRules()
-        currentRules = rules[random(rules.count)]
-        
-        let w = Int(self.view.frame.size.width)
-        let h = Int(self.view.frame.size.height)
+        let w = 200
+        let h = 600
         pixrow = Array(count:w, repeatedValue:Pixel())
-        pixrow[w/2] = Pixel(255)
-        pixarr += pixrow
-        pixarr += Array(count:(w * (h-1)), repeatedValue:Pixel())
         
-        var p3 = [pixarr[0],pixarr[1],pixarr[2]]
-        var currPos: Int = 0
-        for row in 0..<h-1 {
-            currPos = (row * w) + 1 //reset the current position for each row
-            p3 = [pixarr[currPos-1],pixarr[currPos],pixarr[currPos+1]] //reset the p3 array
-            for col in 1..<w-1 {
-                pixarr[currPos + w] = rule(p3)//set the current position in the next row according to the current p3 rule
-                p3.removeAtIndex(0) //shift the rules by removing the first element of p3
-                p3.append(pixarr[++currPos+1])//increment currPos, then grab the next pixel past that
-            }
+        
+        switch(4) {
+        case 1:
+            baseFilename = "CA_2Point_Balanced"
+            for i in 1...2 { pixrow[w/3*i] = Pixel(255) }
+        case 2:
+            baseFilename = "CA_3Point_Balanced"
+            for i in 1...3 { pixrow[w/4*i] = Pixel(255) }
+        case 3:
+            baseFilename = "CA_4Point_Balanced"
+            for i in 1...4 { pixrow[w/5*i] = Pixel(255) }
+        case 4:
+            baseFilename = "CA_5Point_Balanced"
+            for i in 1...5 { pixrow[w/6*i] = Pixel(255) }
+        case 5:
+            baseFilename = "CA_6Point_Balanced"
+            for i in 1...5 { pixrow[w/7*i] = Pixel(255) }
+        default:
+            baseFilename = "CA_SinglePoint_Balanced"
+            pixrow[w/2] = Pixel(255)
         }
         
-        let img = imageFromPixelData(pixarr, width: UInt(w), height: UInt(h))
-        imgv = UIImageView(image: img)
-        imgv.center = self.view.center
-        self.view.addSubview(imgv)
-        
-        delay(1, closure: { () -> () in
-            self.nextAsync()
-        })
+        nextAsync()
     }
-
+    
     func parseRow(row:[Pixel]) -> [Pixel] {
         let p = Pixel()
         var nextRow = [Pixel]()
@@ -80,10 +81,11 @@ class ViewController: UIViewController {
     
     func nextAsync() {
         autoreleasepool { () -> () in
-            self.currentRules = self.rules[self.ruleIndex++]
-            
-            let w = Int(self.view.frame.size.width)
-            let h = Int(self.view.frame.size.height)
+            self.currentRules = self.rules[self.ruleIndex]
+            self.ruleIndex++
+            if self.ruleIndex > self.rules.count { exit(0) }
+            let w = 200
+            let h = 600
             var parr = [Pixel]()
             parr += self.pixrow
             parr += Array(count:(w * (h-1)), repeatedValue:Pixel())
@@ -116,16 +118,23 @@ class ViewController: UIViewController {
                 var arr = Array(self.currentRules.keys)
                 arr.sort { $0 < $1 }
                 
-                var title = "CA_SinglePoint_Centered_"
+                var filename = self.baseFilename+"_"
                 for i in 0..<arr.count {
                     var key = arr[i]
                     var pix = self.currentRules[key]!
                     var s = pix.rule
-                    title += s
+                    filename += s
                 }
+
                 
-                let data = UIImagePNGRepresentation(self.imageFromPixelData(parr, width: UInt(w), height: UInt(h)));
-                data.writeToFile(self.docsDir()+"/\(title).png", atomically: true)
+                let fm = NSFileManager()
+                fm.createDirectoryAtPath(self.docsDir()+"/\(self.baseFilename)/", withIntermediateDirectories: false, attributes: nil, error: nil)
+                
+                let paths = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true);
+
+                let img = self.imageFromPixelData(parr, width: UInt(w), height: UInt(h))
+                let data = img.TIFFRepresentationUsingCompression(NSTIFFCompression.None, factor: 1)!
+                data.writeToFile(self.docsDir()+"/\(self.baseFilename)/\(filename).png", atomically: true)
                 
                 self.delay(0.1, closure: { () -> () in
                     self.nextAsync()
@@ -133,7 +142,7 @@ class ViewController: UIViewController {
             }
         }
     }
-
+    
     func next() {
         currentRules = rules[random(rules.count)]
         
@@ -188,7 +197,7 @@ class ViewController: UIViewController {
         }
     }
     
-    func imageFromPixelData(pixels: [Pixel], width: UInt, height: UInt) -> UIImage {
+    func imageFromPixelData(pixels: [Pixel], width: UInt, height: UInt) -> NSImage {
         let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
         let bitmapInfo:CGBitmapInfo = CGBitmapInfo(CGImageAlphaInfo.PremultipliedFirst.rawValue)
         let bitsPerComponent: UInt = 8
@@ -197,13 +206,13 @@ class ViewController: UIViewController {
         let c = pixels.count
         let t = Int(width * height)
         
-        assert(c == t)
+//        assert(c == t)
         
         var d = pixels
         let data = NSData(bytes: &d, length: d.count * sizeof(Pixel))
         let provider = CGDataProviderCreateWithCFData(data)
         let img = CGImageCreate(width, height, bitsPerComponent, bitsPerPixel, width * UInt(sizeof(Pixel)), rgbColorSpace, bitmapInfo, provider, nil, true, kCGRenderingIntentDefault)
-        return UIImage(CGImage: img)!
+        return NSImage(CGImage: img!, size: CGSizeMake(CGFloat(width), CGFloat(height)))
     }
     
     
