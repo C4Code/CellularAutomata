@@ -36,6 +36,8 @@
 		1F07CA271A37D3CE00008DFD /* CellularAutomataTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CellularAutomataTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1F07CA2C1A37D3CE00008DFD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1F07CA2D1A37D3CE00008DFD /* CellularAutomataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellularAutomataTests.swift; sourceTree = "<group>"; };
+		1F07CA651A38DADB00008DFD /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
+		1F07CA671A38DAE700008DFD /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +61,8 @@
 		1F07CA091A37D3CD00008DFD = {
 			isa = PBXGroup;
 			children = (
+				1F07CA671A38DAE700008DFD /* CoreGraphics.framework */,
+				1F07CA651A38DADB00008DFD /* ImageIO.framework */,
 				1F07CA141A37D3CD00008DFD /* CellularAutomata */,
 				1F07CA2A1A37D3CE00008DFD /* CellularAutomataTests */,
 				1F07CA131A37D3CD00008DFD /* Products */,
@@ -411,6 +415,7 @@
 				1F07CA331A37D3CE00008DFD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		1F07CA341A37D3CE00008DFD /* Build configuration list for PBXNativeTarget "CellularAutomataTests" */ = {
 			isa = XCConfigurationList;
@@ -419,6 +424,7 @@
 				1F07CA361A37D3CE00008DFD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
