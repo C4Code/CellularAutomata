@@ -10,6 +10,8 @@ import Cocoa
 
 class ViewController: NSViewController {
 
+    var allowsRandomPixel = false
+    var allowsRandomRule = false
     var ruleIndex = 0
     var currentArray = [Bool]()
     var firstRow = [Bool]()
@@ -22,6 +24,8 @@ class ViewController: NSViewController {
     var imgv = NSImageView()
     
     var baseFilename = ""
+    
+    var step = 15
 
     func random(below: Int) -> Int {
         return Int(arc4random_uniform(UInt32(below)))
@@ -31,26 +35,107 @@ class ViewController: NSViewController {
         
         generateRules()
         let w = 200
-        let h = 600
+        let h = 200
         pixrow = Array(count:w, repeatedValue:Pixel())
         
-        
-        switch(4) {
+        switch(step) {
         case 1:
-            baseFilename = "CA_2Point_Balanced"
-            for i in 1...2 { pixrow[w/3*i] = Pixel(255) }
+            baseFilename = "CA_5Cluster_Random"
+            let start = random(w-20)
+            for i in 0...5 {
+                pixrow[start + random(20)] = Pixel(255)
+            }
         case 2:
-            baseFilename = "CA_3Point_Balanced"
-            for i in 1...3 { pixrow[w/4*i] = Pixel(255) }
+            baseFilename = "CA_5Cluster_Balanced"
+            let start = random(w-20)
+            for i in 0...5 {
+                pixrow[start + i * 4] = Pixel(255)
+            }
         case 3:
-            baseFilename = "CA_4Point_Balanced"
-            for i in 1...4 { pixrow[w/5*i] = Pixel(255) }
+            baseFilename = "CA_10Cluster_Balanced"
+            let start = random(w-40)
+            for i in 0...10 {
+                pixrow[start + i * 4] = Pixel(255)
+            }
         case 4:
-            baseFilename = "CA_5Point_Balanced"
-            for i in 1...5 { pixrow[w/6*i] = Pixel(255) }
+            baseFilename = "CA_10Cluster_Random"
+            let start = random(w-40)
+            for i in 0...10 {
+                pixrow[start+random(40)] = Pixel(255)
+            }
         case 5:
-            baseFilename = "CA_6Point_Balanced"
-            for i in 1...5 { pixrow[w/7*i] = Pixel(255) }
+            baseFilename = "CA_4x3Cluster_Wide"
+            for i in 0...3 {
+                let start = random(w-10)
+                for j in 0...2 {
+                    pixrow[start + random(10)] = Pixel(255)
+                }
+            }
+        case 6:
+            baseFilename = "CA_3x4Cluster_Wide"
+            for i in 0...2 {
+                let start = random(w-10)
+                for j in 0...3 {
+                    pixrow[start + random(8)] = Pixel(255)
+                }
+            }
+        case 7:
+            baseFilename = "CA_SinglePoint_Balanced_AllowsRandomPixel"
+            pixrow[w/2] = Pixel(255)
+            self.allowsRandomPixel = true
+        case 8:
+            baseFilename = "CA_5Cluster_Random_AllowsRandomPixel"
+            let start = random(w-20)
+            for i in 0...5 {
+                pixrow[start + random(20)] = Pixel(255)
+            }
+            self.allowsRandomPixel = true
+        case 9:
+            baseFilename = "CA_5Cluster_Balanced_AllowsRandomPixel"
+            let start = random(w-20)
+            for i in 0...5 {
+                pixrow[start + i * 4] = Pixel(255)
+            }
+            self.allowsRandomPixel = true
+        case 10:
+            baseFilename = "CA_10Cluster_Balanced_AllowsRandomPixel"
+            let start = random(w-40)
+            for i in 0...10 {
+                pixrow[start + i * 4] = Pixel(255)
+            }
+            self.allowsRandomPixel = true
+        case 11:
+            baseFilename = "CA_10Cluster_Random_AllowsRandomPixel"
+            let start = random(w-40)
+            for i in 0...10 {
+                pixrow[start+random(40)] = Pixel(255)
+            }
+            self.allowsRandomPixel = true
+        case 12:
+            baseFilename = "CA_4x3Cluster_Wide_AllowsRandomPixel"
+            for i in 0...3 {
+                let start = random(w-10)
+                for j in 0...2 {
+                    pixrow[start + random(10)] = Pixel(255)
+                }
+            }
+            self.allowsRandomPixel = true
+        case 13:
+            baseFilename = "CA_3x4Cluster_Wide_AllowsRandomPixel"
+            for i in 0...2 {
+                let start = random(w-10)
+                for j in 0...3 {
+                    pixrow[start + random(8)] = Pixel(255)
+                }
+            }
+        case 14:
+            baseFilename = "CA_SinglePoint_Balanced_AllowsRandomRule"
+            pixrow[w/2] = Pixel(255)
+            allowsRandomRule = true
+        case 15:
+            baseFilename = "CA_SinglePoint_Balanced_AllowsRandomRule_LessRandom"
+            pixrow[w/2] = Pixel(255)
+            allowsRandomRule = true
         default:
             baseFilename = "CA_SinglePoint_Balanced"
             pixrow[w/2] = Pixel(255)
@@ -79,13 +164,20 @@ class ViewController: NSViewController {
         return nextRow
     }
     
+    func restart() {
+        step++
+        if step > 13 { exit(0) }
+        pixrow = Array(count:200, repeatedValue:Pixel())
+        ruleIndex = 0
+    }
+    
     func nextAsync() {
         autoreleasepool { () -> () in
+            if self.ruleIndex >= self.rules.count { exit(0)}
             self.currentRules = self.rules[self.ruleIndex]
             self.ruleIndex++
-            if self.ruleIndex > self.rules.count { exit(0) }
             let w = 200
-            let h = 600
+            let h = 200
             var parr = [Pixel]()
             parr += self.pixrow
             parr += Array(count:(w * (h-1)), repeatedValue:Pixel())
@@ -107,13 +199,17 @@ class ViewController: NSViewController {
                             p3.removeAtIndex(0) //shift the rules by removing the first element of p3
                             p3.append(parr[++currPos+1])//increment currPos, then grab the next pixel past that
                         }
+                        if self.allowsRandomPixel && self.random(100) < 5 {
+                            parr[currPos+self.random(w)] = Pixel(128,128,128)
+                        }
+                        if self.allowsRandomRule && self.random(200) < 5 {
+                            self.currentRules = self.rules[self.random(self.rules.count)]
+                        }
                     }
                     dispatch_group_wait(g, DISPATCH_TIME_FOREVER)
                 })
             }
             dispatch_sync(q) {
-                let endArr = CFAbsoluteTimeGetCurrent()
-                println(endArr-startArr)
                 
                 var arr = Array(self.currentRules.keys)
                 arr.sort { $0 < $1 }
@@ -126,7 +222,6 @@ class ViewController: NSViewController {
                     filename += s
                 }
 
-                
                 let fm = NSFileManager()
                 fm.createDirectoryAtPath(self.docsDir()+"/\(self.baseFilename)/", withIntermediateDirectories: false, attributes: nil, error: nil)
                 
@@ -161,7 +256,7 @@ class ViewController: NSViewController {
             }
         }
         let endArr = CFAbsoluteTimeGetCurrent()
-        println(endArr-startArr)
+
         imgv.image = imageFromPixelData(pixarr, width: UInt(w), height: UInt(h))
         delay(1, closure: { () -> () in
             self.next()
@@ -240,7 +335,6 @@ class ViewController: NSViewController {
         currentArray.removeAll()
         currentArray += firstRow
         currentArray += array
-        println("curr[\(currentArray.count)]")
     }
     
     private func solveForward(w: Int, _ h: Int, _ firstRow: [Pixel]) -> [Pixel] {
@@ -340,7 +434,7 @@ public struct Pixel {
     
     var rule: String {
         get {
-            if self.r == 0 { return "0" }
+            if self.r == 0 && self.g == 0 && self.b == 0 { return "0" }
             return "1"
         }
     }
